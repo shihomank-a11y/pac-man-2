@@ -23,7 +23,10 @@ window.onload = function(){
     board.width=boardWidth;
     context=board.getContext("2d");
     loadImages();
-
+    loadMap();
+    console.log(walls.size);
+    console.log(foods.size);
+    console.log(ghosts.size);
 }
 const tileMap = [
     "XXXXXXXXXXXXXXXXXXX",
@@ -106,7 +109,7 @@ function loadMap(){
              const ghost = new Block(orangeGhostImage ,x ,y ,tileSize ,tileSize);
              ghosts.add(ghost);
             }
-            else if(tilrMapChar == 'p'){
+            else if(tilrMapChar == 'p '){
             const ghost = new Block(pinkGhostImage ,x ,y ,tileSize ,tileSize);
              ghosts.add(ghost);
             }
@@ -115,7 +118,7 @@ function loadMap(){
              ghosts.add(ghost);
             
              }
-             else if (tileMapChar == 'p'){
+             else if (tileMapChar == 'P'){
               pacman = new Block(pacmanRightImage, x ,y ,tileSize ,tileSize);
 
              }
