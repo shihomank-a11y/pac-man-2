@@ -24,9 +24,11 @@ window.onload = function(){
     context=board.getContext("2d");
     loadImages();
     loadMap();
-    console.log(walls.size);
-    console.log(foods.size);
-    console.log(ghosts.size);
+    // console.log(walls.size);
+    // console.log(foods.size);
+    // console.log(ghosts.size);
+    update();
+    document.addEventListener("keyup", movePacman);
 }
 const tileMap = [
     "XXXXXXXXXXXXXXXXXXX",
@@ -55,7 +57,7 @@ const tileMap = [
 
 const walls = new Set();
 const foods = new Set();
-const ghost = new Set();
+const ghosts = new Set();
 
 
 function loadImages(){
@@ -90,7 +92,7 @@ function loadMap(){
 
     for (let r=0;r<rowCount;r++){
         for(let c=0;c<columnCount;c++){
-            const row = tilemap[r];
+            const row = tileMap[r];
             const tileMapChar = row[c];
 
 
@@ -109,7 +111,7 @@ function loadMap(){
              const ghost = new Block(orangeGhostImage ,x ,y ,tileSize ,tileSize);
              ghosts.add(ghost);
             }
-            else if(tilrMapChar == 'p '){
+            else if(tileMapChar == 'p'){
             const ghost = new Block(pinkGhostImage ,x ,y ,tileSize ,tileSize);
              ghosts.add(ghost);
             }
@@ -123,7 +125,7 @@ function loadMap(){
 
              }
              else if(tileMapChar == ' '){
-                const food = new block(null ,x+14 ,y+14 ,4 ,4);
+                const food = new Block(null ,x+14 ,y+14 ,4 ,4);
                 foods.add(food);
              }
             }
@@ -131,8 +133,59 @@ function loadMap(){
     }
 
 
+function update() {
+    move();
+    draw();
+    //settimeout to be used for 20fps
+    setTimeout(update,50);
+}
+function draw(){
+    context.clearRect(0, 0, board.width, board.height);
+    context.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height);
+    for (let ghost of ghosts.values()){
+        context.drawImage(ghost.image, ghost.x, ghost.y, ghost.width, ghost.height);
+    }
+    for (let wall of walls.values()) {
+        context.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height);
+    }
+    context.fillStyle = "White";
+    for (let food of foods.values()){
+        context.fillRect(food.x, food.y, food.width, food.height);
+    }
+}
+function move(){
+     pacman.x += pacman.velocityX;
+     pacman.y += pacman.velocityY;
 
+     for(let wall of walls.values()){
+        if (collision (pacman,wall)){
+            pacman.x -=pacman.velocityX;
+            pacman.y -=pacman.velocityY;
+            break;
+        }
+     }
+}
 
+function movePacman(e) {
+    if(e.code == "ArrowUp" || e.code == "keyW"){
+        pacman.updateDirection('U');
+    }
+    if(e.code == "ArrowDown" || e.code == "keyS"){
+        pacman.updateDirection('D');
+    }
+    if(e.code == "ArrowLeft" || e.code == "keyA"){
+        pacman.updateDirection('L');
+    }
+    if(e.code == "ArrowRight" || e.code == "keyD"){
+        pacman.updateDirection('R');
+    }
+}
+function collision (a, b){
+    return a.x < b.x + b.width &&
+           a.x + a.width > b.x &&
+           a.y < b.y + b.height &&
+           a.y + a.height > b.y;
+}
 class Block{
     constructor(image ,x ,y ,width ,height){
         this.image = image;
@@ -143,5 +196,44 @@ class Block{
 
         this.startX = x;
         this.startY = y;
+
+        this.direction = 'R';
+        this.velocityX =0;
+        this.velocityY = 0;
+
+    }
+    updateDirection(direction){
+        this.direction = direction;
+        this.updateVelocity();
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+
+        for (let wall of walls.values()){
+            if (collision(this, wall)){
+                this.x -= this.velocityX;
+                this.y -= this.velocityY;
+                this.direction = prevDirection;
+                this.updateVelocity();
+                return;
+            }
+        }
+    }
+    updateVelocity(){
+        if(this.direction == 'U'){
+            this.velocityX = 0;
+            this.velocityY = -tileSize/4;
+        }
+        else if (this.direction == 'D'){
+              this.velocityX = 0;
+            this.velocityY = tileSize/4
+        }
+        else if (this.direction == 'L'){
+              this.velocityX = -tileSize/4;
+            this.velocityY = 0;
+        }
+        else if (this.direction == 'R'){
+             this.velocityX = tileSize/4;
+            this.velocityY = 0;
+        }
     }
 }
